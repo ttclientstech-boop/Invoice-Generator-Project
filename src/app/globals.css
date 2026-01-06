@@ -1,26 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;700;900&display=swap');
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary: #d4503a;
+  --color-primary-foreground: #ffffff;
+
+  --color-background: #f8fafc;
+  /* Slightly off-white for better contrast with cards */
+  --color-foreground: #1e293b;
+
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --shadow-paper: 0 1px 1px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.05), 0 20px 60px rgba(0, 0, 0, 0.05);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base resets handled by global css */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+  /* Sophisticated Mesh Gradient Background */
+  background-image:
+    radial-gradient(at 0% 0%, hsla(11, 85%, 97%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(210, 100%, 98%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(11, 85%, 96%, 1) 0, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(210, 100%, 98%, 1) 0, transparent 50%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+  /* Tighter tracking for modern feel */
+}
+
+/* Utility Classes for Glassmorphism & Cards */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-glass);
+}
+
+.shadow-paper {
+  box-shadow: var(--shadow-paper);
+}
+
+/* Smooth transitions for all interactive elements */
+button,
+input,
+select,
+textarea {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
 }
