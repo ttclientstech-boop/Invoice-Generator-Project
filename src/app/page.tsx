@@ -24,7 +24,7 @@ export default function Home() {
   }, []);
 
   const methods = useForm<InvoiceFormData>({
-    resolver: zodResolver(invoiceFormSchema) as any,
+    resolver: zodResolver(invoiceFormSchema),
     mode: 'onChange',
     defaultValues: {
       sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }, // Default sender for demo
@@ -199,10 +199,42 @@ export default function Home() {
                 </div>
 
                 {/* The "Desk" area for the paper */}
-                <div className="flex-1 overflow-hidden relative rounded-2xl bg-gray-100/50 inner-shadow-sm border border-black/5">
+                <div
+                  ref={(el) => {
+                    if (el) {
+                      const updateScale = () => {
+                        const containerWidth = el.clientWidth;
+                        // 210mm is approx 794px + some padding buffer (approx 850px total needed width for comfortable view)
+                        const contentWidth = 850;
+                        const newScale = Math.min(containerWidth / contentWidth, 1);
+                        const previewContainer = document.getElementById('invoice-preview-container');
+                        if (previewContainer) {
+                          previewContainer.style.transform = `scale(${newScale})`;
+                          previewContainer.style.transformOrigin = 'top center';
+                        }
+                      };
+
+                      // Run initially
+                      updateScale();
+
+                      // Add listener
+                      window.addEventListener('resize', updateScale);
+
+                      // Create observer for element resize div
+                      const observer = new ResizeObserver(updateScale);
+                      observer.observe(el);
+
+                      return () => {
+                        window.removeEventListener('resize', updateScale);
+                        observer.disconnect();
+                      }
+                    }
+                  }}
+                  className="flex-1 overflow-hidden relative rounded-2xl bg-gray-100/50 inner-shadow-sm border border-black/5"
+                >
                   <div className="absolute inset-0 overflow-auto flex justify-center py-8 px-4 custom-scrollbar">
                     {/* Paper shadow is handled inside InvoicePreview or by a wrapper here */}
-                    <div id="invoice-preview-container" className="relative transform transition-transform duration-300">
+                    <div id="invoice-preview-container" className="relative transform transition-transform duration-300 origin-top">
                       <InvoicePreview />
                     </div>
                   </div>
