@@ -10,7 +10,7 @@ export function PreviewAction({ onSave }: { onSave: () => void }) {
         const { toPng } = await import('html-to-image');
         const jsPDF = (await import('jspdf')).default;
 
-        const element = document.getElementById('invoice-preview-container');
+        const element = document.getElementById('invoice-pdf-capture-target');
         if (!element) {
             alert("Preview not found! Please ensure the preview is visible.");
             return;

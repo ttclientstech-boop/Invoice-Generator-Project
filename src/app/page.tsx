@@ -245,7 +245,15 @@ export default function Home() {
           </div>
         </div>
 
-      </FormProvider>
-    </div>
+
+        {/* Hidden container for PDF generation - Always rendered, off-screen, fixed A4 width (approx 794px) */}
+        <div style={{ position: 'absolute', top: 0, left: '-9999px', width: '794px' }}>
+          <div id="invoice-pdf-capture-target">
+            <InvoicePreview />
+          </div>
+        </div>
+
+      </FormProvider >
+    </div >
   );
 }
