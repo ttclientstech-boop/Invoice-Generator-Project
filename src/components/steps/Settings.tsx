@@ -114,7 +114,7 @@ export function Settings() {
                         <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Tax Rate (%)</label>
                         <input
                             type="number"
-                            {...register('settings.taxRate')}
+                            {...register('settings.taxRate', { valueAsNumber: true })}
                             className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                     </div>
@@ -123,7 +123,7 @@ export function Settings() {
                         <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Discount</label>
                         <input
                             type="number"
-                            {...register('settings.discount')}
+                            {...register('settings.discount', { valueAsNumber: true })}
                             className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                     </div>
