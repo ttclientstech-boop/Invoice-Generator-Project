@@ -27,7 +27,7 @@ export async function saveInvoice(data: InvoiceFormData) {
             invoiceNumber: validatedData.settings.invoiceNumber,
             date: validatedData.settings.date,
             dueDate: validatedData.settings.dueDate,
-            currency: validatedData.settings.currency,
+
             taxRate: validatedData.settings.taxRate,
             discount: validatedData.settings.discount,
             paymentTerms: validatedData.settings.paymentTerms,

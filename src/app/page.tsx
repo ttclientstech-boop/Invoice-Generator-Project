@@ -27,7 +27,7 @@ export default function Home() {
     resolver: zodResolver(invoiceFormSchema),
     mode: 'onChange',
     defaultValues: {
-      sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connect@talentronaut.in', address: 'Plot no 106, P.', gstVatId: '27AA...' }, // Default sender for demo
+      sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }, // Default sender for demo
       client: {
         name: '',
         email: '',
@@ -38,21 +38,39 @@ export default function Home() {
         zip: '',
         country: 'India'
       },
-      items: [{ serviceCategory: 'Web & Software Dev', description: 'Friendly Mentor Meet', price: 800, quantity: 2, details: {} }],
+      items: [{ serviceCategory: 'Web & Software Dev', description: 'Friendly Mentor Meet', price: 800, quantity: 2, currency: 'USD', details: {} }],
       settings: {
-        currency: 'USD',
         taxRate: 18,
         discount: 0,
         status: 'Draft',
         date: new Date(),
         dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), // 7 days from now
-        invoiceNumber: 'INV-001',
+        invoiceNumber: '', // Will be populated by API
         isPaid: false
       }
     }
   });
 
-  const { trigger, handleSubmit } = methods;
+  const { trigger, handleSubmit, setValue } = methods;
+
+  // Fetch next invoice number on mount
+  React.useEffect(() => {
+    const fetchInvoiceNumber = async () => {
+      try {
+        const response = await fetch('/api/invoices/generate-number');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.nextNumber) {
+            setValue('settings.invoiceNumber', data.nextNumber);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch invoice number', error);
+      }
+    };
+
+    fetchInvoiceNumber();
+  }, [setValue]);
 
   const nextStep = async () => {
     let valid = false;

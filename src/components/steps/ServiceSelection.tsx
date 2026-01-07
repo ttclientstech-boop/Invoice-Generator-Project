@@ -24,6 +24,7 @@ export function ServiceSelection() {
                         description: '',
                         price: 0,
                         quantity: 1,
+                        currency: 'USD',
                         details: {} // Initialize empty
                     })}
                     className="flex items-center gap-2 bg-neutral-900 text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-black hover:shadow-lg hover:-translate-y-0.5 transition-all"
@@ -138,15 +139,28 @@ export function ServiceSelection() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Price (Unit)</label>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
-                                        <input
-                                            type="number"
-                                            step="0.01"
-                                            {...register(`items.${index}.price`, { valueAsNumber: true })}
-                                            className="flex h-11 w-full pl-8 rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium text-neutral-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                        />
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Price & Currency</label>
+                                    <div className="flex gap-3">
+                                        <div className="w-28">
+                                            <select
+                                                {...register(`items.${index}.currency`)}
+                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm font-medium text-neutral-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                                            >
+                                                <option value="USD">USD ($)</option>
+                                                <option value="EUR">EUR (€)</option>
+                                                <option value="GBP">GBP (£)</option>
+                                                <option value="INR">INR (₹)</option>
+                                            </select>
+                                        </div>
+                                        <div className="relative flex-1">
+                                            <input
+                                                type="number"
+                                                step="0.01"
+                                                {...register(`items.${index}.price`, { valueAsNumber: true })}
+                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium text-neutral-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                                placeholder="0.00"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -169,6 +183,7 @@ export function ServiceSelection() {
                                 description: '',
                                 price: 0,
                                 quantity: 1,
+                                currency: 'USD',
                                 details: {}
                             })}
                             className="inline-flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-2 rounded-full font-bold text-sm hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm"

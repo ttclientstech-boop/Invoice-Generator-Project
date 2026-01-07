@@ -34,13 +34,14 @@ export interface IServiceItem {
     serviceDetails?: any; // Stores the specific form fields for the category (Mixed type)
     quantity: number;
     price: number;
+    currency: string;
 }
 
 export interface IInvoice extends Document {
     invoiceNumber: string;
     date: Date;
     dueDate: Date;
-    currency: string;
+    // currency removed
     taxRate: number; // Percentage
     discount: number; // Absolute value or Percentage (handled by logic)
     paymentTerms?: string;
@@ -74,10 +75,7 @@ const InvoiceSchema = new Schema<IInvoice>({
         type: Date,
         required: [true, 'Due date is required']
     },
-    currency: {
-        type: String,
-        default: 'USD'
-    },
+    // currency removed
     taxRate: {
         type: Number,
         default: 0
@@ -139,6 +137,7 @@ const InvoiceSchema = new Schema<IInvoice>({
         serviceDetails: { type: Schema.Types.Mixed }, // Flexible for diverse category fields
         quantity: { type: Number, default: 1 },
         price: { type: Number, required: true },
+        currency: { type: String, default: 'USD' }
     }],
 
     totalAmount: {

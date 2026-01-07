@@ -55,9 +55,14 @@ export function Settings() {
                             {errors.sender?.email && <p className="text-red-500 text-xs pl-1">{errors.sender.email.message}</p>}
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">GST / Tax ID</label>
-                            <input {...register('sender.gstVatId')} className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Tax ID" />
+                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Phone Number</label>
+                            <input {...register('sender.phone')} className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="+1 234 567 890" />
                         </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">GST / Tax ID</label>
+                        <input {...register('sender.gstVatId')} className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Tax ID" />
                     </div>
 
                     <div className="space-y-1.5">
@@ -84,18 +89,7 @@ export function Settings() {
                         {errors.settings?.invoiceNumber && <p className="text-red-500 text-xs pl-1">{errors.settings.invoiceNumber.message}</p>}
                     </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Currency</label>
-                        <select
-                            {...register('settings.currency')}
-                            className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                        >
-                            <option value="USD">USD ($)</option>
-                            <option value="EUR">EUR (€)</option>
-                            <option value="GBP">GBP (£)</option>
-                            <option value="INR">INR (₹)</option>
-                        </select>
-                    </div>
+
 
                     <div className="space-y-1.5">
                         <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Date Issued</label>

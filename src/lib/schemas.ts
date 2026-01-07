@@ -69,6 +69,7 @@ export const serviceItemSchema = z.object({
     serviceCategory: z.enum(serviceCategories),
     description: z.string().optional(), // Can be auto-generated or manually edited
     quantity: z.coerce.number().min(1).default(1),
+    currency: z.string().default('USD'), // Moved from settings
     price: z.coerce.number().min(0, "Price cannot be negative"),
 
     // This is where it gets dynamic. We'll use a union or just a comprehensive optional object for simplicity in the UI form
@@ -114,7 +115,7 @@ export const settingsSchema = z.object({
     invoiceNumber: z.string().min(1, "Invoice number required"),
     date: z.coerce.date().default(() => new Date()),
     dueDate: z.coerce.date(),
-    currency: z.string().default('USD'),
+    // currency removed from here
     taxRate: z.coerce.number().min(0).max(100).default(0),
     discount: z.coerce.number().min(0).default(0),
     paymentTerms: z.string().optional(),
