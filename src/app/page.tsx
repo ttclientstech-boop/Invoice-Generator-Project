@@ -24,7 +24,7 @@ export default function Home() {
   }, []);
 
   const methods = useForm<InvoiceFormData>({
-    resolver: zodResolver(invoiceFormSchema),
+    resolver: zodResolver(invoiceFormSchema) as any,
     mode: 'onChange',
     defaultValues: {
       sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }, // Default sender for demo
