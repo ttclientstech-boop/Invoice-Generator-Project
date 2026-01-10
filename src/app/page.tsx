@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useForm, FormProvider, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { InvoiceFormData, invoiceFormSchema } from '@/lib/schemas';
+import { invoiceFormSchema, InvoiceFormData } from '@/lib/schemas';
 import { saveInvoice } from '@/app/actions';
 import { InvoiceStepper } from '@/components/InvoiceStepper';
 import { ClientInfo } from '@/components/steps/ClientInfo';
@@ -11,6 +11,7 @@ import { ServiceSelection } from '@/components/steps/ServiceSelection';
 import { Settings } from '@/components/steps/Settings';
 import { PreviewAction } from '@/components/steps/PreviewAction';
 import { InvoicePreview } from '@/components/InvoicePreview';
+import { ScalableInvoicePreview } from '@/components/ScalableInvoicePreview';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 const steps = ['Client', 'Services', 'Settings', 'Preview'];
@@ -159,7 +160,14 @@ export default function Home() {
                     {currentStep === 0 && <ClientInfo />}
                     {currentStep === 1 && <ServiceSelection />}
                     {currentStep === 2 && <Settings />}
-                    {currentStep === 3 && <PreviewAction onSave={handleSubmit(onSubmit)} />}
+                    {currentStep === 3 && (
+                      <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+                        <div className="lg:hidden block rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50">
+                          <ScalableInvoicePreview />
+                        </div>
+                        <PreviewAction onSave={handleSubmit(onSubmit)} />
+                      </div>
+                    )}
                   </div>
                 </form>
               </div>
@@ -199,44 +207,9 @@ export default function Home() {
                 </div>
 
                 {/* The "Desk" area for the paper */}
-                <div
-                  ref={(el) => {
-                    if (el) {
-                      const updateScale = () => {
-                        const containerWidth = el.clientWidth;
-                        // 210mm is approx 794px + some padding buffer (approx 850px total needed width for comfortable view)
-                        const contentWidth = 850;
-                        const newScale = Math.min(containerWidth / contentWidth, 1);
-                        const previewContainer = document.getElementById('invoice-preview-container');
-                        if (previewContainer) {
-                          previewContainer.style.transform = `scale(${newScale})`;
-                          previewContainer.style.transformOrigin = 'top center';
-                        }
-                      };
-
-                      // Run initially
-                      updateScale();
-
-                      // Add listener
-                      window.addEventListener('resize', updateScale);
-
-                      // Create observer for element resize div
-                      const observer = new ResizeObserver(updateScale);
-                      observer.observe(el);
-
-                      return () => {
-                        window.removeEventListener('resize', updateScale);
-                        observer.disconnect();
-                      }
-                    }
-                  }}
-                  className="flex-1 overflow-hidden relative rounded-2xl bg-gray-100/50 inner-shadow-sm border border-black/5"
-                >
-                  <div className="absolute inset-0 overflow-auto flex justify-center py-8 px-4 custom-scrollbar">
-                    {/* Paper shadow is handled inside InvoicePreview or by a wrapper here */}
-                    <div id="invoice-preview-container" className="relative transform transition-transform duration-300 origin-top">
-                      <InvoicePreview />
-                    </div>
+                <div className="flex-1 overflow-y-auto custom-scrollbar rounded-2xl bg-gray-100/50 inner-shadow-sm border border-black/5 p-4">
+                  <div className="min-h-full flex justify-center">
+                    <ScalableInvoicePreview />
                   </div>
                 </div>
               </div>
