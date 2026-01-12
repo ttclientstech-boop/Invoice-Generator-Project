@@ -56,13 +56,13 @@ const saasSchema = z.object({
 
 export const clientSchema = z.object({
     name: z.string().min(2, "Name is too short"),
-    email: z.string().email("Invalid email address"),
+    email: z.string().email("Invalid email address").optional().or(z.literal("")),
     phone: z.string().optional(),
-    address: z.string().min(1, "Address is required"),
-    city: z.string().min(1, "City is required"),
-    state: z.string().min(1, "State is required"),
-    zip: z.string().min(1, "Zip Code is required"),
-    country: z.string().min(1, "Country is required"),
+    address: z.string().optional().or(z.literal("")),
+    city: z.string().optional().or(z.literal("")),
+    state: z.string().optional().or(z.literal("")),
+    zip: z.string().optional().or(z.literal("")),
+    country: z.string().optional().or(z.literal("")),
 });
 
 export const serviceItemSchema = z.object({
@@ -131,10 +131,12 @@ export const senderSchema = z.object({
     phone: z.string().optional(),
     gstVatId: z.string().optional(),
     logo: z.string().optional(), // URL or base64
+    stamp: z.string().optional(), // New field for company stamp/signature
 });
 
 export const invoiceFormSchema = z.object({
     sender: senderSchema,
+    savedSenders: z.array(senderSchema), // For managing multiple companies
     client: clientSchema,
     items: z.array(serviceItemSchema).min(1, "Add at least one item"),
     settings: settingsSchema,

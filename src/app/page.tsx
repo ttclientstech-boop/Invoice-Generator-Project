@@ -8,13 +8,14 @@ import { saveInvoice } from '@/app/actions';
 import { InvoiceStepper } from '@/components/InvoiceStepper';
 import { ClientInfo } from '@/components/steps/ClientInfo';
 import { ServiceSelection } from '@/components/steps/ServiceSelection';
+import { PaymentDetails } from '@/components/steps/PaymentDetails'; // Import new step
 import { Settings } from '@/components/steps/Settings';
 import { PreviewAction } from '@/components/steps/PreviewAction';
 import { InvoicePreview } from '@/components/InvoicePreview';
 import { ScalableInvoicePreview } from '@/components/ScalableInvoicePreview';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
-const steps = ['Client', 'Services', 'Settings', 'Preview'];
+const steps = ['Client', 'Services', 'Payment', 'Settings', 'Preview']; // Added Payment
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -28,7 +29,10 @@ export default function Home() {
     resolver: zodResolver(invoiceFormSchema) as any,
     mode: 'onChange',
     defaultValues: {
-      sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }, // Default sender for demo
+      sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }, // Active sender
+      savedSenders: [
+        { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }
+      ], // List of saved companies
       client: {
         name: '',
         email: '',
@@ -79,7 +83,8 @@ export default function Home() {
     // Validate current step fields before moving
     if (currentStep === 0) valid = await trigger('client');
     else if (currentStep === 1) valid = await trigger('items');
-    else if (currentStep === 2) valid = await trigger('settings') && await trigger('sender');
+    else if (currentStep === 2) valid = await trigger('settings'); // Payment Step
+    else if (currentStep === 3) valid = await trigger('sender');   // Settings Step
     else valid = true;
 
     if (valid) {
@@ -104,7 +109,8 @@ export default function Home() {
     let valid = false;
     if (currentStep === 0) valid = await trigger('client');
     else if (currentStep === 1) valid = await trigger('items');
-    else if (currentStep === 2) valid = await trigger('settings') && await trigger('sender');
+    else if (currentStep === 2) valid = await trigger('settings');
+    else if (currentStep === 3) valid = await trigger('sender');
     else valid = true;
 
     if (valid) {
@@ -112,7 +118,6 @@ export default function Home() {
       window.scrollTo(0, 0);
     }
   };
-
 
 
   const onSubmit: SubmitHandler<InvoiceFormData> = async (data) => {
@@ -130,7 +135,6 @@ export default function Home() {
       console.error(error);
     }
   };
-
 
 
   if (!mounted) return null;
@@ -159,8 +163,9 @@ export default function Home() {
                   <div className="flex-1">
                     {currentStep === 0 && <ClientInfo />}
                     {currentStep === 1 && <ServiceSelection />}
-                    {currentStep === 2 && <Settings />}
-                    {currentStep === 3 && (
+                    {currentStep === 2 && <PaymentDetails />}
+                    {currentStep === 3 && <Settings />}
+                    {currentStep === 4 && (
                       <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                         <div className="lg:hidden block rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50">
                           <ScalableInvoicePreview />
@@ -230,3 +235,4 @@ export default function Home() {
     </div >
   );
 }
+

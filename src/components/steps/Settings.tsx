@@ -1,143 +1,262 @@
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, useFieldArray } from 'react-hook-form';
 import { InvoiceFormData } from '@/lib/schemas';
-import { Upload } from 'lucide-react';
+import { Building2, Plus, Trash2, CheckCircle2, Circle, Upload } from 'lucide-react';
 
 export function Settings() {
-    const { register, setValue, formState: { errors } } = useFormContext<InvoiceFormData>();
+    const { register, control, watch, setValue, formState: { errors } } = useFormContext<InvoiceFormData>();
+
+    // Manage list of companies
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: "savedSenders"
+    });
+
+    // Watch active sender to determine who is selected
+    const activeSender = watch('sender');
+
+    // Watch savedSenders to checking length for remove button logic
+    const savedSenders = watch('savedSenders');
+
+    const handleSelectCompany = (index: number) => {
+        const companyToSelect = savedSenders[index];
+        setValue('sender', companyToSelect);
+    };
+
+    const isSelected = (index: number) => {
+        const company = savedSenders[index];
+        // Simple comparison based on name and email
+        return company?.name === activeSender?.name && company?.email === activeSender?.email;
+    };
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
 
-            {/* SECTION 1: Company Settings (Sender) */}
-            <div className="space-y-6 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-all">
-                <div className="absolute top-0 left-0 w-1.5 h-full bg-neutral-800 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <h2 className="text-xl font-bold font-heading text-neutral-800 border-b border-gray-100 pb-4 mb-2">Company Settings</h2>
-
-                {/* Logo Upload */}
-                {/* Logo Upload */}
-                <div className="border-2 border-dashed border-gray-200 bg-gray-50/50 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-white hover:border-primary/50 transition-all cursor-pointer group/upload relative">
-                    <input
-                        type="file"
-                        accept="image/*"
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                    setValue('sender.logo', reader.result as string);
-                                };
-                                reader.readAsDataURL(file);
-                            }
-                        }}
-                    />
-                    <div className="w-12 h-12 bg-white rounded-full shadow-sm flex items-center justify-center text-gray-400 group-hover/upload:text-primary group-hover/upload:scale-110 transition-all mb-3 pointer-events-none">
-                        <Upload size={20} />
-                    </div>
-                    <p className="text-sm font-bold text-gray-700 group-hover/upload:text-primary transition-colors pointer-events-none">Click to Upload Logo</p>
-                    <p className="text-xs text-gray-400 mt-1 pointer-events-none">Recommended: 300x150 px (PNG/JPG)</p>
-                    {/* Hidden input to store the actual value */}
-                    <input type="hidden" {...register('sender.logo')} />
-                </div>
-
-                <div className="space-y-4">
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Company Name</label>
-                        <input {...register('sender.name')} className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Your Company Name" />
-                        {errors.sender?.name && <p className="text-red-500 text-xs pl-1">{errors.sender.name.message}</p>}
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Company Email</label>
-                            <input {...register('sender.email')} className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="contact@company.com" />
-                            {errors.sender?.email && <p className="text-red-500 text-xs pl-1">{errors.sender.email.message}</p>}
-                        </div>
-                        <div className="space-y-1.5">
-                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Phone Number</label>
-                            <input {...register('sender.phone')} className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="+1 234 567 890" />
-                        </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">GST / Tax ID</label>
-                        <input {...register('sender.gstVatId')} className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Tax ID" />
-                    </div>
-
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Address</label>
-                        <input {...register('sender.address')} className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Company Address" />
-                        {errors.sender?.address && <p className="text-red-500 text-xs pl-1">{errors.sender.address.message}</p>}
-                    </div>
-                </div>
+            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                <h2 className="text-xl font-bold font-heading text-neutral-800 flex items-center gap-2">
+                    <Building2 size={24} className="text-primary" />
+                    Company Settings
+                </h2>
+                <button
+                    type="button"
+                    onClick={() => append({ name: '', email: '', address: '', phone: '', logo: '', gstVatId: '' })}
+                    className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-4 py-2 rounded-lg hover:bg-primary/10"
+                >
+                    <Plus size={16} />
+                    Add Company
+                </button>
             </div>
 
-            {/* SECTION 2: Invoice Settings */}
-            <div className="space-y-6 bg-white rounded-2xl p-8 shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-all">
-                <div className="absolute top-0 left-0 w-1.5 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <h2 className="text-xl font-bold font-heading text-neutral-800 border-b border-gray-100 pb-4 mb-2">Invoice Configuration</h2>
+            <div className="space-y-6">
+                {fields.map((field, index) => {
+                    const selected = isSelected(index);
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Invoice Number</label>
-                        <input
-                            {...register('settings.invoiceNumber')}
-                            placeholder="INV-2024-001"
-                            className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                        />
-                        {errors.settings?.invoiceNumber && <p className="text-red-500 text-xs pl-1">{errors.settings.invoiceNumber.message}</p>}
-                    </div>
+                    return (
+                        <div
+                            key={field.id}
+                            className={`bg-white rounded-2xl p-6 shadow-sm border transition-all relative overflow-hidden group ${selected ? 'border-primary ring-1 ring-primary/20 bg-primary/[0.02]' : 'border-gray-100 hover:border-gray-300'}`}
+                        >
+                            {/* Header Actions: Selection & Delete */}
+                            <div className="absolute top-0 right-0 p-4 z-10 flex items-center gap-2">
+                                {/* Remove Button */}
+                                {fields.length > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => remove(index)}
+                                        className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                        title="Remove Company"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                )}
 
+                                {/* Select Button */}
+                                <button
+                                    type="button"
+                                    onClick={() => handleSelectCompany(index)}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${selected
+                                        ? 'bg-green-100 text-green-700 cursor-default'
+                                        : 'bg-gray-100 text-neutral-600 hover:bg-primary hover:text-white cursor-pointer'
+                                        }`}
+                                >
+                                    {selected ? (
+                                        <>
+                                            <CheckCircle2 size={14} />
+                                            Active
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Circle size={14} />
+                                            Select
+                                        </>
+                                    )}
+                                </button>
+                            </div>
 
+                            {/* Removed bottom button */}
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Date Issued</label>
-                        <input
-                            type="date"
-                            {...register('settings.date')}
-                            className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-600"
-                        />
-                    </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-[90%] md:w-full relative z-0">
+                                <div className="space-y-1.5">
+                                    {/* Logo Upload */}
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Logo</label>
+                                    <div className="flex gap-4 items-center">
+                                        {/* Preview */}
+                                        <div className="w-16 h-16 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0 relative group/preview">
+                                            {watch(`savedSenders.${index}.logo`) ? (
+                                                <>
+                                                    <img src={watch(`savedSenders.${index}.logo`) || ''} alt="Logo" className="w-full h-full object-contain" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setValue(`savedSenders.${index}.logo`, '')}
+                                                        className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-all"
+                                                        title="Remove Logo"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <Upload size={20} className="text-gray-300" />
+                                            )}
+                                        </div>
+                                        {/* Input */}
+                                        <div className="flex-1">
+                                            <label className="block w-full">
+                                                <span className="sr-only">Choose logo</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="block w-full text-sm text-slate-500
+                                                    file:mr-4 file:py-2 file:px-4
+                                                    file:rounded-full file:border-0
+                                                    file:text-xs file:font-semibold
+                                                    file:bg-primary/10 file:text-primary
+                                                    hover:file:bg-primary/20 cursor-pointer"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onloadend = () => {
+                                                                setValue(`savedSenders.${index}.logo`, reader.result as string);
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
+                                                    }}
+                                                />
+                                            </label>
+                                            <input type="hidden" {...register(`savedSenders.${index}.logo`)} />
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Due Date</label>
-                        <input
-                            type="date"
-                            {...register('settings.dueDate')}
-                            className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-600"
-                        />
-                        {errors.settings?.dueDate && <p className="text-red-500 text-xs pl-1">{errors.settings.dueDate.message}</p>}
-                    </div>
+                                <div className="space-y-1.5">
+                                    {/* Stamp Upload */}
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Company Stamp</label>
+                                    <div className="flex gap-4 items-center">
+                                        {/* Preview */}
+                                        <div className="w-16 h-16 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-center overflow-hidden shrink-0 relative group/preview">
+                                            {watch(`savedSenders.${index}.stamp`) ? (
+                                                <>
+                                                    <img src={watch(`savedSenders.${index}.stamp`) || ''} alt="Stamp" className="w-full h-full object-contain p-1" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setValue(`savedSenders.${index}.stamp`, '')}
+                                                        className="absolute inset-0 bg-black/50 text-white flex items-center justify-center opacity-0 group-hover/preview:opacity-100 transition-all"
+                                                        title="Remove Stamp"
+                                                    >
+                                                        <Trash2 size={12} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <div className="border border-dashed border-gray-300 w-8 h-8 rounded-full flex items-center justify-center">
+                                                    <div className="w-6 h-6 rounded-full border border-gray-300"></div>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* Input */}
+                                        <div className="flex-1">
+                                            <label className="block w-full">
+                                                <span className="sr-only">Choose stamp</span>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="block w-full text-sm text-slate-500
+                                                    file:mr-4 file:py-2 file:px-4
+                                                    file:rounded-full file:border-0
+                                                    file:text-xs file:font-semibold
+                                                    file:bg-primary/10 file:text-primary
+                                                    hover:file:bg-primary/20 cursor-pointer"
+                                                    onChange={(e) => {
+                                                        const file = e.target.files?.[0];
+                                                        if (file) {
+                                                            const reader = new FileReader();
+                                                            reader.onloadend = () => {
+                                                                setValue(`savedSenders.${index}.stamp`, reader.result as string);
+                                                            };
+                                                            reader.readAsDataURL(file);
+                                                        }
+                                                    }}
+                                                />
+                                            </label>
+                                            <input type="hidden" {...register(`savedSenders.${index}.stamp`)} />
+                                        </div>
+                                    </div>
+                                </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Tax Rate (%)</label>
-                        <input
-                            type="number"
-                            {...register('settings.taxRate', { valueAsNumber: true })}
-                            className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                        />
-                    </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Company Name</label>
+                                    <input
+                                        {...register(`savedSenders.${index}.name`)}
+                                        placeholder="Your Company Name"
+                                        className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    />
+                                    {errors.savedSenders?.[index]?.name && <p className="text-red-500 text-xs pl-1">{errors.savedSenders[index]?.name?.message}</p>}
+                                </div>
 
-                    <div className="space-y-1.5">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Discount</label>
-                        <input
-                            type="number"
-                            {...register('settings.discount', { valueAsNumber: true })}
-                            className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                        />
-                    </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Email Address</label>
+                                    <input
+                                        type="email"
+                                        {...register(`savedSenders.${index}.email`)}
+                                        placeholder="billing@company.com"
+                                        className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    />
+                                    {errors.savedSenders?.[index]?.email && <p className="text-red-500 text-xs pl-1">{errors.savedSenders[index]?.email?.message}</p>}
+                                </div>
 
-                    <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Payment Status</label>
-                        <div className="flex items-center gap-3 bg-gray-50/50 p-2 rounded-lg border border-gray-200">
-                            <input type="checkbox" {...register('settings.isPaid')} className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer accent-primary" />
-                            <span className="text-sm font-medium text-neutral-700">Mark as Paid</span>
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Office Address</label>
+                                    <textarea
+                                        {...register(`savedSenders.${index}.address`)}
+                                        placeholder="Full business address"
+                                        rows={3}
+                                        className="flex w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none"
+                                    />
+                                    {errors.savedSenders?.[index]?.address && <p className="text-red-500 text-xs pl-1">{errors.savedSenders[index]?.address?.message}</p>}
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Phone Number</label>
+                                    <input
+                                        type="tel"
+                                        {...register(`savedSenders.${index}.phone`)}
+                                        placeholder="+1 (555) 000-0000"
+                                        className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    />
+                                </div>
+
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">GST/VAT ID</label>
+                                    <input
+                                        {...register(`savedSenders.${index}.gstVatId`)}
+                                        placeholder="Optional tax ID"
+                                        className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
+                    );
+                })}
             </div>
-
         </div>
     );
 }

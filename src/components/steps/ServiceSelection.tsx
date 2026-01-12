@@ -129,41 +129,7 @@ export function ServiceSelection() {
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Quantity/Hrs</label>
-                                    <input
-                                        type="number"
-                                        {...register(`items.${index}.quantity`, { valueAsNumber: true })}
-                                        className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium text-neutral-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Price & Currency</label>
-                                    <div className="flex gap-3">
-                                        <div className="w-28">
-                                            <select
-                                                {...register(`items.${index}.currency`)}
-                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm font-medium text-neutral-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-                                            >
-                                                <option value="USD">USD ($)</option>
-                                                <option value="EUR">EUR (€)</option>
-                                                <option value="GBP">GBP (£)</option>
-                                                <option value="INR">INR (₹)</option>
-                                            </select>
-                                        </div>
-                                        <div className="relative flex-1">
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                {...register(`items.${index}.price`, { valueAsNumber: true })}
-                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium text-neutral-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                                placeholder="0.00"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+
 
                         </div>
                     );

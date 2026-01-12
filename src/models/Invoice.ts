@@ -111,13 +111,13 @@ const InvoiceSchema = new Schema<IInvoice>({
 
     client: {
         name: { type: String, required: [true, 'Client name is required'] },
-        email: { type: String, required: [true, 'Client email is required'] },
+        email: { type: String },
         phone: { type: String },
-        address: { type: String, required: true },
-        city: { type: String, required: true },
-        state: { type: String, required: true },
-        zip: { type: String, required: true },
-        country: { type: String, required: true },
+        address: { type: String },
+        city: { type: String },
+        state: { type: String },
+        zip: { type: String },
+        country: { type: String },
     },
 
     items: [{
