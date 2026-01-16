@@ -39,7 +39,7 @@ export interface IServiceItem {
     | 'AI-driven Solutions'
     | 'SaaS Development'
     | 'Other';
-    description: string; // The generated text summary
+    description?: string; // Optional to match Zod schema
     serviceDetails?: any; // Stores the specific form fields for the category (Mixed type)
     quantity: number;
     price: number;
@@ -48,6 +48,7 @@ export interface IServiceItem {
 
 export interface IInvoice extends Document {
     invoiceNumber: string;
+    documentType: 'invoice' | 'quotation' | 'proposal';
     date: Date;
     dueDate: Date;
     // currency removed
@@ -157,7 +158,7 @@ const InvoiceSchema = new Schema<IInvoice>({
                 'Other'
             ]
         },
-        description: { type: String, required: true },
+        description: { type: String }, // Removed required: true
         serviceDetails: { type: Schema.Types.Mixed }, // Flexible for diverse category fields
         quantity: { type: Number, default: 1 },
         price: { type: Number, required: true },
