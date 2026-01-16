@@ -40,6 +40,26 @@ export function ClientInfo() {
                     </div>
                 </div>
 
+                {/* Organization & GST */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-1.5 md:col-span-1">
+                        <label htmlFor="client.organizationName" className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Organization Name</label>
+                        <input
+                            {...register('client.organizationName')}
+                            placeholder="Optional Organization Name"
+                            className="flex w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm font-medium text-neutral-800 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm hover:bg-white hover:shadow-md"
+                        />
+                    </div>
+                    <div className="space-y-1.5 md:col-span-1">
+                        <label htmlFor="client.gstVatId" className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">GST/VAT ID</label>
+                        <input
+                            {...register('client.gstVatId')}
+                            placeholder="Optional Tax ID"
+                            className="flex w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-3 text-sm font-medium text-neutral-800 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-sm hover:bg-white hover:shadow-md"
+                        />
+                    </div>
+                </div>
+
                 {/* Phone & Address Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-1.5">

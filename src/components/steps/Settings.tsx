@@ -29,6 +29,18 @@ export function Settings() {
         return company?.name === activeSender?.name && company?.email === activeSender?.email;
     };
 
+    // Auto-update active sender when the selected saved sender is modified
+    React.useEffect(() => {
+        const activeIndex = savedSenders.findIndex(s => s.name === activeSender?.name && s.email === activeSender?.email);
+        if (activeIndex !== -1) {
+            const currentSaved = savedSenders[activeIndex];
+            // Deep comparison or just checking if they are different stringified?
+            if (JSON.stringify(currentSaved) !== JSON.stringify(activeSender)) {
+                setValue('sender', currentSaved);
+            }
+        }
+    }, [savedSenders, activeSender, setValue]);
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
 
@@ -39,7 +51,15 @@ export function Settings() {
                 </h2>
                 <button
                     type="button"
-                    onClick={() => append({ name: '', email: '', address: '', phone: '', logo: '', gstVatId: '' })}
+                    onClick={() => append({
+                        name: '',
+                        email: '',
+                        address: '',
+                        phone: '',
+                        logo: '',
+                        gstVatId: '',
+                        bankDetails: { accountName: '', bankName: '', bankAddress: '', accountNumber: '', ifscCode: '', swiftCode: '' }
+                    })}
                     className="flex items-center gap-2 text-sm font-bold text-primary hover:text-primary/80 transition-colors bg-primary/5 px-4 py-2 rounded-lg hover:bg-primary/10"
                 >
                     <Plus size={16} />
@@ -251,6 +271,60 @@ export function Settings() {
                                         placeholder="Optional tax ID"
                                         className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                     />
+                                </div>
+
+                                <div className="md:col-span-2 border-t border-gray-100 pt-4 mt-2">
+                                    <h4 className="text-sm font-bold text-neutral-800 mb-3 block">Bank Details</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Company / Account Name</label>
+                                            <input
+                                                {...register(`savedSenders.${index}.bankDetails.accountName`)}
+                                                placeholder="Account Holder Name"
+                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Bank Name</label>
+                                            <input
+                                                {...register(`savedSenders.${index}.bankDetails.bankName`)}
+                                                placeholder="Bank Name"
+                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5 md:col-span-2">
+                                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Bank Address</label>
+                                            <input
+                                                {...register(`savedSenders.${index}.bankDetails.bankAddress`)}
+                                                placeholder="Branch Address"
+                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Account Number</label>
+                                            <input
+                                                {...register(`savedSenders.${index}.bankDetails.accountNumber`)}
+                                                placeholder="Account Number"
+                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">IFSC Code</label>
+                                            <input
+                                                {...register(`savedSenders.${index}.bankDetails.ifscCode`)}
+                                                placeholder="IFSC Code"
+                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">SWIFT Code</label>
+                                            <input
+                                                {...register(`savedSenders.${index}.bankDetails.swiftCode`)}
+                                                placeholder="Optional SWIFT Code"
+                                                className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

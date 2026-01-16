@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { User, List, Settings, FileText, Check } from 'lucide-react';
+import { User, List, Settings, FileText, Check, Building2, Coins, FileStack } from 'lucide-react';
 
 interface InvoiceStepperProps {
     currentStep: number;
@@ -11,7 +11,7 @@ interface InvoiceStepperProps {
 export function InvoiceStepper({ currentStep, steps, onStepClick }: InvoiceStepperProps) {
     const progress = Math.round(((currentStep) / (steps.length - 1)) * 100);
 
-    const icons = [User, List, Settings, FileText];
+    const icons = [Building2, FileStack, User, List, Coins, FileText];
 
     return (
         <div className="w-full space-y-4 mb-2">

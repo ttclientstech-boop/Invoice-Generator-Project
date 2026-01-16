@@ -56,6 +56,8 @@ const saasSchema = z.object({
 
 export const clientSchema = z.object({
     name: z.string().min(2, "Name is too short"),
+    organizationName: z.string().optional(), // Added field
+    gstVatId: z.string().optional(), // Added field
     email: z.string().email("Invalid email address").optional().or(z.literal("")),
     phone: z.string().optional(),
     address: z.string().optional().or(z.literal("")),
@@ -132,9 +134,18 @@ export const senderSchema = z.object({
     gstVatId: z.string().optional(),
     logo: z.string().optional(), // URL or base64
     stamp: z.string().optional(), // New field for company stamp/signature
+    bankDetails: z.object({
+        accountName: z.string().optional(), // Often the company name
+        bankName: z.string().optional(),
+        bankAddress: z.string().optional(),
+        accountNumber: z.string().optional(),
+        ifscCode: z.string().optional(),
+        swiftCode: z.string().optional(), // Optional as not all have it
+    }).optional(),
 });
 
 export const invoiceFormSchema = z.object({
+    documentType: z.enum(['proposal', 'quotation', 'invoice']).default('invoice'), // Added document type
     sender: senderSchema,
     savedSenders: z.array(senderSchema), // For managing multiple companies
     client: clientSchema,

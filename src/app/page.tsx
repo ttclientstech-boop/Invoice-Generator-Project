@@ -8,14 +8,18 @@ import { saveInvoice } from '@/app/actions';
 import { InvoiceStepper } from '@/components/InvoiceStepper';
 import { ClientInfo } from '@/components/steps/ClientInfo';
 import { ServiceSelection } from '@/components/steps/ServiceSelection';
-import { PaymentDetails } from '@/components/steps/PaymentDetails'; // Import new step
+import { PaymentDetails } from '@/components/steps/PaymentDetails';
 import { Settings } from '@/components/steps/Settings';
+import { DocumentTypeSelection } from '@/components/steps/DocumentTypeSelection';
 import { PreviewAction } from '@/components/steps/PreviewAction';
 import { InvoicePreview } from '@/components/InvoicePreview';
 import { ScalableInvoicePreview } from '@/components/ScalableInvoicePreview';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 
-const steps = ['Client', 'Services', 'Payment', 'Settings', 'Preview']; // Added Payment
+import { PlaceholderStep } from '@/components/steps/PlaceholderStep';
+import { PlaceholderPreview } from '@/components/PlaceholderPreview';
+
+// ... imports
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
@@ -29,34 +33,40 @@ export default function Home() {
     resolver: zodResolver(invoiceFormSchema) as any,
     mode: 'onChange',
     defaultValues: {
-      sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }, // Active sender
+      documentType: 'invoice',
+      sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' },
       savedSenders: [
         { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }
-      ], // List of saved companies
-      client: {
-        name: '',
-        email: '',
-        phone: '',
-        address: '',
-        city: '',
-        state: '',
-        zip: '',
-        country: 'India'
-      },
+      ],
+      client: { name: '', email: '', phone: '', address: '', city: '', state: '', zip: '', country: 'India' },
       items: [{ serviceCategory: 'Web & Software Dev', description: 'Friendly Mentor Meet', price: 800, quantity: 2, currency: 'USD', details: {} }],
-      settings: {
-        taxRate: 18,
-        discount: 0,
-        status: 'Draft',
-        date: new Date(),
-        dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), // 7 days from now
-        invoiceNumber: '', // Will be populated by API
-        isPaid: false
-      }
+      settings: { taxRate: 18, discount: 0, status: 'Draft', date: new Date(), dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), invoiceNumber: '', isPaid: false }
     }
   });
 
-  const { trigger, handleSubmit, setValue } = methods;
+  const { trigger, handleSubmit, setValue, watch } = methods;
+  const documentType = watch('documentType');
+
+  // Dynamic Steps Definition
+  const steps = React.useMemo(() => {
+    if (documentType === 'invoice' || documentType === 'quotation') {
+      return ['Company', 'Type', 'Client', 'Services', 'Payment', 'Preview'];
+    } else {
+      return ['Company', 'Type', 'Client', 'Details', 'Preview'];
+    }
+  }, [documentType]);
+
+  // Reset to first step if document type changes to avoid out-of-bounds index or wrong step content
+  // Actually, we should try to preserve valid steps. 'Client' is same index (2). 'Type' is (1).
+  // If we are at step 3 (Services) and switch to proposal (Step 3 is Details), it matches index.
+  // If we are at step 4 (Payment) and switch to proposal (Step 4 is Preview), it matches index.
+  // But step 5 (Preview) in invoice has no match in proposal.
+  React.useEffect(() => {
+    if (currentStep >= steps.length) {
+      setCurrentStep(steps.length - 1);
+    }
+  }, [steps.length, currentStep]);
+
 
   // Fetch next invoice number on mount
   React.useEffect(() => {
@@ -65,29 +75,33 @@ export default function Home() {
         const response = await fetch('/api/invoices/generate-number');
         if (response.ok) {
           const data = await response.json();
-          if (data.nextNumber) {
-            setValue('settings.invoiceNumber', data.nextNumber);
-          }
+          if (data.nextNumber) setValue('settings.invoiceNumber', data.nextNumber);
         }
       } catch (error) {
         console.error('Failed to fetch invoice number', error);
       }
     };
-
     fetchInvoiceNumber();
   }, [setValue]);
 
+  // Helper validation function
+  const validateStep = async (stepIndex: number) => {
+    if (stepIndex === 0) return await trigger('sender');
+    if (stepIndex === 1) return true; // Type selection is always valid (has default)
+    if (stepIndex === 2) return await trigger('client');
+
+    if (documentType === 'invoice' || documentType === 'quotation') {
+      if (stepIndex === 3) return await trigger('items'); // Services
+      if (stepIndex === 4) return await trigger('settings'); // Payment
+    } else {
+      if (stepIndex === 3) return true; // Placeholder step for now
+    }
+    return true;
+  };
+
   const nextStep = async () => {
-    let valid = false;
-
-    // Validate current step fields before moving
-    if (currentStep === 0) valid = await trigger('client');
-    else if (currentStep === 1) valid = await trigger('items');
-    else if (currentStep === 2) valid = await trigger('settings'); // Payment Step
-    else if (currentStep === 3) valid = await trigger('sender');   // Settings Step
-    else valid = true;
-
-    if (valid) {
+    const isValid = await validateStep(currentStep);
+    if (isValid) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
       window.scrollTo(0, 0);
     }
@@ -99,54 +113,73 @@ export default function Home() {
   };
 
   const handleStepClick = async (index: number) => {
-    // If clicking a previous step, just go there
     if (index < currentStep) {
       setCurrentStep(index);
       return;
     }
-
-    // If clicking a future step, validate the current step first
-    let valid = false;
-    if (currentStep === 0) valid = await trigger('client');
-    else if (currentStep === 1) valid = await trigger('items');
-    else if (currentStep === 2) valid = await trigger('settings');
-    else if (currentStep === 3) valid = await trigger('sender');
-    else valid = true;
-
-    if (valid) {
+    // Validate current step before jumping forward. 
+    // Ideally we should validate ALL steps between current and target, 
+    // but for now validating current is standard wizard behavior.
+    const isValid = await validateStep(currentStep);
+    if (isValid) {
       setCurrentStep(index);
       window.scrollTo(0, 0);
     }
   };
 
-
   const onSubmit: SubmitHandler<InvoiceFormData> = async (data) => {
     console.log("Submitting:", data);
-
     try {
       const result = await saveInvoice(data);
-      if (result.success) {
-        alert(`Invoice ${data.settings.invoiceNumber} saved successfully!`);
-      } else {
-        alert(`Error: ${result.error}`);
-      }
+      if (result.success) alert(`Document ${data.settings.invoiceNumber} saved!`);
+      else alert(`Error: ${result.error}`);
     } catch (error) {
-      alert("An unexpected error occurred while saving.");
+      alert("An unexpected error occurred.");
       console.error(error);
     }
   };
 
-
   if (!mounted) return null;
+
+  // Render Step Content
+  const renderStepContent = () => {
+    if (currentStep === 0) return <Settings />;
+    if (currentStep === 1) return <DocumentTypeSelection />;
+    if (currentStep === 2) return <ClientInfo />;
+
+    if (documentType === 'invoice' || documentType === 'quotation') {
+      if (currentStep === 3) return <ServiceSelection />;
+      if (currentStep === 4) return <PaymentDetails />;
+      if (currentStep === 5) return (
+        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="lg:hidden block rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50">
+            <ScalableInvoicePreview />
+          </div>
+          <PreviewAction onSave={handleSubmit(onSubmit)} />
+        </div>
+      );
+    } else {
+      // Proposal Flow
+      if (currentStep === 3) return <PlaceholderStep title={'Project Proposal'} />;
+      if (currentStep === 4) return (
+        <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+          <div className="lg:hidden block rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50">
+            <PlaceholderPreview />
+          </div>
+          <PreviewAction onSave={handleSubmit(onSubmit)} />
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="min-h-screen">
       <FormProvider {...methods}>
-
         {/* Top Header */}
         <div className="text-center py-10 mb-8 animate-in fade-in slide-in-from-top-4 duration-700">
-          <h1 className="text-5xl font-extrabold text-neutral-800 font-heading tracking-tight mb-2 drop-shadow-sm">Invoice Generator</h1>
-          <p className="text-neutral-500 text-lg font-medium font-body max-w-2xl mx-auto">Create professional, beautifully designed invoices in seconds.</p>
+          <h1 className="text-5xl font-extrabold text-neutral-800 font-heading tracking-tight mb-2 drop-shadow-sm">Document Generator</h1>
+          <p className="text-neutral-500 text-lg font-medium font-body max-w-2xl mx-auto">Create professional, beautifully designed invoices, proposals, and quotations.</p>
         </div>
 
         <div className="w-full px-4 md:px-8 lg:px-12 xl:px-16 min-h-[calc(100vh-200px)]">
@@ -154,30 +187,16 @@ export default function Home() {
 
             {/* LEFT COLUMN: FORM WIZARD */}
             <div className="lg:col-span-7 xl:col-span-7 space-y-8">
-              {/* Stepper floats above the card */}
               <InvoiceStepper currentStep={currentStep} steps={steps} onStepClick={handleStepClick} />
 
-              {/* Glassmorphism Card for Form */}
               <div className="glass-panel rounded-3xl p-8 min-h-[600px] flex flex-col transition-all duration-300">
                 <form onSubmit={handleSubmit(onSubmit)} className="flex-1 flex flex-col">
                   <div className="flex-1">
-                    {currentStep === 0 && <ClientInfo />}
-                    {currentStep === 1 && <ServiceSelection />}
-                    {currentStep === 2 && <PaymentDetails />}
-                    {currentStep === 3 && <Settings />}
-                    {currentStep === 4 && (
-                      <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                        <div className="lg:hidden block rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50">
-                          <ScalableInvoicePreview />
-                        </div>
-                        <PreviewAction onSave={handleSubmit(onSubmit)} />
-                      </div>
-                    )}
+                    {renderStepContent()}
                   </div>
                 </form>
               </div>
 
-              {/* Controls */}
               <div className="flex justify-between items-center px-2">
                 <button
                   type="button"
@@ -202,19 +221,18 @@ export default function Home() {
 
             {/* RIGHT COLUMN: LIVE PREVIEW */}
             <div className="lg:col-span-5 xl:col-span-5 sticky top-8 hidden lg:block h-[calc(100vh-4rem)]">
-              {/* Preview Container - Clean frame for the paper to sit in */}
               <div className="flex flex-col h-full bg-white/30 backdrop-blur-sm rounded-3xl border border-white/40 p-6 shadow-sm">
                 <div className="mb-6 flex justify-between items-center px-2">
                   <h3 className="font-bold text-gray-700 font-heading text-xl">Live Preview</h3>
-                  <span className="text-xs font-bold text-primary bg-red-50 px-3 py-1 rounded-full border border-red-100 uppercase tracking-wide">
-                    #{methods.watch('settings.invoiceNumber')}
-                  </span>
+                  {(documentType === 'invoice' || documentType === 'quotation') && (
+                    <span className="text-xs font-bold text-primary bg-red-50 px-3 py-1 rounded-full border border-red-100 uppercase tracking-wide">
+                      #{methods.watch('settings.invoiceNumber')}
+                    </span>
+                  )}
                 </div>
-
-                {/* The "Desk" area for the paper */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar rounded-2xl bg-gray-100/50 inner-shadow-sm border border-black/5 p-4">
                   <div className="min-h-full flex justify-center">
-                    <ScalableInvoicePreview />
+                    {(documentType === 'invoice' || documentType === 'quotation') ? <ScalableInvoicePreview /> : <PlaceholderPreview />}
                   </div>
                 </div>
               </div>
@@ -223,11 +241,9 @@ export default function Home() {
           </div>
         </div>
 
-
-        {/* Hidden container for PDF generation - Always rendered, off-screen, fixed A4 width (approx 794px) */}
         <div style={{ position: 'absolute', top: 0, left: '-9999px', width: '794px' }}>
           <div id="invoice-pdf-capture-target">
-            <InvoicePreview />
+            {(documentType === 'invoice' || documentType === 'quotation') && <InvoicePreview />}
           </div>
         </div>
 

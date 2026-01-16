@@ -20,6 +20,15 @@ export interface ISender {
     phone?: string;
     gstVatId?: string;
     logo?: string;
+    stamp?: string;
+    bankDetails?: {
+        accountName?: string;
+        bankName?: string;
+        bankAddress?: string;
+        accountNumber?: string;
+        ifscCode?: string;
+        swiftCode?: string;
+    };
 }
 
 export interface IServiceItem {
@@ -100,13 +109,28 @@ const InvoiceSchema = new Schema<IInvoice>({
         default: false
     },
 
+    documentType: {
+        type: String,
+        enum: ['invoice', 'quotation', 'proposal'],
+        default: 'invoice'
+    },
+
     sender: {
         name: { type: String, required: true },
         email: { type: String, required: true },
         address: { type: String, required: true },
         phone: { type: String },
         gstVatId: { type: String },
-        logo: { type: String }
+        logo: { type: String },
+        stamp: { type: String },
+        bankDetails: {
+            accountName: { type: String },
+            bankName: { type: String },
+            bankAddress: { type: String },
+            accountNumber: { type: String },
+            ifscCode: { type: String },
+            swiftCode: { type: String }
+        }
     },
 
     client: {
