@@ -312,7 +312,7 @@ export default function Home() {
             </div>
 
             {/* RIGHT COLUMN: LIVE PREVIEW */}
-            <div className="lg:col-span-5 xl:col-span-5 sticky top-8 hidden lg:block h-[calc(100vh-4rem)]">
+            <div className="lg:col-span-5 xl:col-span-5 sticky top-8 block h-[600px] lg:h-[calc(100vh-4rem)]">
               <div className="flex flex-col h-full bg-white/30 backdrop-blur-sm rounded-3xl border border-white/40 p-6 shadow-sm">
                 <div className="mb-6 flex justify-between items-center px-2">
                   <h3 className="font-bold text-gray-700 font-heading text-xl">Live Preview</h3>
