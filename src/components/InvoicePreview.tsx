@@ -160,7 +160,7 @@ export function InvoicePreview() {
                                 )}
                             </div>
                             <div className="space-y-1 text-slate-500 text-sm font-medium">
-                                <p>{numberLabel}: <span className="text-slate-700">{settings?.invoiceNumber || 'INV-001'}</span></p>
+                                <p>{numberLabel}: <span className="text-slate-700">{settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-001' : 'INV-001')}</span></p>
                                 <p>Date of issue: <span className="text-slate-700">{settings?.date ? new Date(settings.date).toLocaleDateString('en-US') : '-'}</span></p>
                                 {!settings?.isPaid && (
                                     <p>Date due: <span className="text-slate-700">{settings?.dueDate ? new Date(settings.dueDate).toLocaleDateString('en-US') : '-'}</span></p>
@@ -328,7 +328,7 @@ export function InvoicePreview() {
                                                 )}
                                             </div>
                                             <div className="space-y-1 text-slate-500 text-sm font-medium">
-                                                <p>{numberLabel}: <span className="text-slate-700">{settings?.invoiceNumber || 'INV-001'}</span></p>
+                                                <p>{numberLabel}: <span className="text-slate-700">{settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-001' : 'INV-001')}</span></p>
                                                 <p>Date of issue: <span className="text-slate-700">{settings?.date ? new Date(settings.date).toLocaleDateString('en-US') : '-'}</span></p>
                                                 {!settings?.isPaid && (
                                                     <p>Date due: <span className="text-slate-700">{settings?.dueDate ? new Date(settings.dueDate).toLocaleDateString('en-US') : '-'}</span></p>
@@ -394,7 +394,7 @@ export function InvoicePreview() {
                             {/* --- HEADER SPACER (Subsequent Pages) --- */}
                             {!isFirstPage && (
                                 <div className="mb-8 border-b pb-4 flex justify-between items-center opacity-50">
-                                    <span className="text-sm font-bold text-slate-400">{documentTitle} {settings?.invoiceNumber || 'INV-001'}</span>
+                                    <span className="text-sm font-bold text-slate-400">{documentTitle} {settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-001' : 'INV-001')}</span>
                                     <span className="text-sm font-bold text-slate-400">Page {pageIndex + 1} of {pageCount}</span>
                                 </div>
                             )}

@@ -18,28 +18,70 @@ export function Settings() {
     // Watch savedSenders to checking length for remove button logic
     const savedSenders = watch('savedSenders');
 
+
+
+    // State to track the selected index locally to handle updates while editing
+    const [selectedIndex, setSelectedIndex] = React.useState<number | null>(null);
+
+    // Initialize/Auto-select
+    React.useEffect(() => {
+        // If no senders, append one empty
+        if (savedSenders && savedSenders.length === 0) {
+            append({
+                name: '',
+                email: '',
+                address: '',
+                phone: '',
+                logo: '',
+                gstVatId: '',
+                stamp: '',
+                bankDetails: { accountName: '', bankName: '', bankAddress: '', accountNumber: '', ifscCode: '', swiftCode: '' }
+            });
+            setSelectedIndex(0);
+            return;
+        }
+
+        // If currently no selection state, try to find match or default to 0 if only 1
+        if (selectedIndex === null && savedSenders?.length > 0) {
+            // Try to match current sender to one of saved
+            const matchIndex = savedSenders.findIndex(s =>
+                s.name === activeSender?.name &&
+                s.email === activeSender?.email &&
+                s.address === activeSender?.address
+            );
+
+            if (matchIndex !== -1) {
+                setSelectedIndex(matchIndex);
+            } else if (savedSenders.length === 1) {
+                // Default to first if only one
+                setSelectedIndex(0);
+                if (JSON.stringify(activeSender) !== JSON.stringify(savedSenders[0])) {
+                    setValue('sender', savedSenders[0]);
+                }
+            }
+        }
+    }, [savedSenders?.length, append, setValue, activeSender, selectedIndex]);
+
+    // Enhanced Sync Effect: Update 'sender' whenever the *selected* savedSender changes
+    React.useEffect(() => {
+        if (selectedIndex !== null && savedSenders && savedSenders[selectedIndex]) {
+            const currentSelected = savedSenders[selectedIndex];
+            // Only update if actually different to avoid cycles (though RHF handle this well)
+            if (JSON.stringify(currentSelected) !== JSON.stringify(activeSender)) {
+                setValue('sender', currentSelected);
+            }
+        }
+    }, [savedSenders, selectedIndex, setValue, activeSender]);
+
     const handleSelectCompany = (index: number) => {
-        const companyToSelect = savedSenders[index];
-        setValue('sender', companyToSelect);
+        setSelectedIndex(index);
+        // Immediate set (effect will also catch but loose timing)
+        setValue('sender', savedSenders[index]);
     };
 
     const isSelected = (index: number) => {
-        const company = savedSenders[index];
-        // Simple comparison based on name and email
-        return company?.name === activeSender?.name && company?.email === activeSender?.email;
+        return index === selectedIndex;
     };
-
-    // Auto-update active sender when the selected saved sender is modified
-    React.useEffect(() => {
-        const activeIndex = savedSenders.findIndex(s => s.name === activeSender?.name && s.email === activeSender?.email);
-        if (activeIndex !== -1) {
-            const currentSaved = savedSenders[activeIndex];
-            // Deep comparison or just checking if they are different stringified?
-            if (JSON.stringify(currentSaved) !== JSON.stringify(activeSender)) {
-                setValue('sender', currentSaved);
-            }
-        }
-    }, [savedSenders, activeSender, setValue]);
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">

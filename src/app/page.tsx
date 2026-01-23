@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useForm, FormProvider, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { invoiceFormSchema, InvoiceFormData } from '@/lib/schemas';
-import { saveInvoice } from '@/app/actions';
+import { createInvoice, createQuotation } from '@/app/actions';
 import { InvoiceStepper } from '@/components/InvoiceStepper';
 import { ClientInfo } from '@/components/steps/ClientInfo';
 import { ServiceSelection } from '@/components/steps/ServiceSelection';
@@ -18,13 +18,15 @@ import { ChevronRight, ChevronLeft } from 'lucide-react';
 
 import { PlaceholderStep } from '@/components/steps/PlaceholderStep';
 import { PlaceholderPreview } from '@/components/PlaceholderPreview';
+import { ProposalUploadStep } from '@/components/steps/ProposalUploadStep';
 
-// ... imports
+// ... (other imports)
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
 
+  // Prevent hydration mismatch
   React.useEffect(() => {
     setMounted(true);
   }, []);
@@ -34,76 +36,149 @@ export default function Home() {
     mode: 'onChange',
     defaultValues: {
       documentType: 'invoice',
-      sender: { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' },
-      savedSenders: [
-        { name: 'Talentronaut Technologies Pvt. Ltd.', email: 'connecttalentronaut@gmail.com', address: 'Fab Lab, SRM, Bharathi Salai,\nRamapuram, Chennai, Tamil Nadu 600089', phone: '+91 82203 24802', gstVatId: '27AA...' }
-      ],
-      client: { name: '', email: '', phone: '', address: '', city: '', state: '', zip: '', country: 'India' },
-      items: [{ serviceCategory: 'Web & Software Dev', description: 'Friendly Mentor Meet', price: 800, quantity: 2, currency: 'USD', details: {} }],
-      settings: { taxRate: 18, discount: 0, status: 'Draft', date: new Date(), dueDate: new Date(new Date().setDate(new Date().getDate() + 7)), invoiceNumber: '', isPaid: false }
+      sender: {
+        name: '',
+        email: '',
+        address: '',
+        phone: '',
+        gstVatId: '',
+        logo: '',
+        stamp: '',
+        bankDetails: {
+          accountName: '',
+          bankName: '',
+          bankAddress: '',
+          accountNumber: '',
+          ifscCode: '',
+          swiftCode: ''
+        }
+      },
+      savedSenders: [],
+      client: {
+        name: '',
+        organizationName: '',
+        gstVatId: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        zip: '',
+        country: ''
+      },
+      items: [],
+      settings: {
+        invoiceNumber: '',
+        date: new Date(),
+        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // +7 days default
+        taxRate: 0,
+        discount: 0,
+        paymentTerms: '',
+        notes: '',
+        status: 'Draft',
+        isPaid: false
+      },
+      // proposalDocument: null // Not in schema but handled by un-registered watch or we can register it manually
     }
   });
 
-  const { trigger, handleSubmit, setValue, watch } = methods;
+  const { trigger, handleSubmit, setValue, watch, register } = methods; // Add register
   const documentType = watch('documentType');
 
   // Dynamic Steps Definition
   const steps = React.useMemo(() => {
-    if (documentType === 'invoice' || documentType === 'quotation') {
+    if (documentType === 'invoice') {
+      return ['Company', 'Type', 'Client', 'Services', 'Payment', 'Preview'];
+    } else if (documentType === 'quotation') {
+      // Keeping quotation flow same as invoice for now as per previous logic, or separate?
+      // User asked for "Project proposal" specifically.
       return ['Company', 'Type', 'Client', 'Services', 'Payment', 'Preview'];
     } else {
-      return ['Company', 'Type', 'Client', 'Details', 'Preview'];
+      // Proposal
+      // New Flow: 0:Company -> 1:Type -> 2:Upload -> 3:Client -> 4:Details -> 5:Preview
+      return ['Company', 'Type', 'Upload', 'Client', 'Details', 'Preview'];
     }
   }, [documentType]);
 
-  // Reset to first step if document type changes to avoid out-of-bounds index or wrong step content
-  // Actually, we should try to preserve valid steps. 'Client' is same index (2). 'Type' is (1).
-  // If we are at step 3 (Services) and switch to proposal (Step 3 is Details), it matches index.
-  // If we are at step 4 (Payment) and switch to proposal (Step 4 is Preview), it matches index.
-  // But step 5 (Preview) in invoice has no match in proposal.
+  // Ensure valid step index when switching types
   React.useEffect(() => {
     if (currentStep >= steps.length) {
       setCurrentStep(steps.length - 1);
     }
-  }, [steps.length, currentStep]);
+  }, [documentType, steps.length, currentStep]);
 
-
-  // Fetch next invoice number on mount
+  // Fetch initial invoice/quotation number
   React.useEffect(() => {
-    const fetchInvoiceNumber = async () => {
+    let ignore = false;
+    const fetchNumber = async () => {
       try {
-        const response = await fetch('/api/invoices/generate-number');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.nextNumber) setValue('settings.invoiceNumber', data.nextNumber);
+        const type = documentType || 'invoice';
+        const res = await fetch(`/api/invoices/generate-number?type=${type}`);
+        const data = await res.json();
+
+        if (!ignore && data.nextNumber) {
+          // Only set if not already set or if empty? 
+          // Better to always fetch new number if switching types, 
+          // but we need to be careful not to overwrite user input if they typed something manual?
+          // For now, let's just set it if the field is empty or if we are switching contexts heavily.
+          // Simplified: Just set it.
+          setValue('settings.invoiceNumber', data.nextNumber);
         }
       } catch (error) {
-        console.error('Failed to fetch invoice number', error);
+        console.error("Failed to fetch number:", error);
       }
     };
-    fetchInvoiceNumber();
-  }, [setValue]);
+
+    fetchNumber();
+
+    return () => {
+      ignore = true;
+    };
+  }, [setValue, documentType]);
 
   // Helper validation function
   const validateStep = async (stepIndex: number) => {
-    if (stepIndex === 0) return await trigger('sender');
-    if (stepIndex === 1) return true; // Type selection is always valid (has default)
-    if (stepIndex === 2) return await trigger('client');
+    if (stepIndex === 0) {
+      // Validate 'savedSenders' so the UI inputs show errors (since they are bound to savedSenders)
+      // Validate 'sender' because that's the actual data needed
+      const isSavedValid = await trigger('savedSenders');
+      const isSenderValid = await trigger('sender');
+      return isSavedValid && isSenderValid;
+    }
+    if (stepIndex === 1) return true; // Type selection
 
+    // Step validation logic needs to align with new indices
     if (documentType === 'invoice' || documentType === 'quotation') {
-      if (stepIndex === 3) return await trigger('items'); // Services
-      if (stepIndex === 4) return await trigger('settings'); // Payment
+      if (stepIndex === 2) return await trigger('client');
+      if (stepIndex === 3) return await trigger('items');
+      if (stepIndex === 4) return await trigger('settings');
     } else {
-      if (stepIndex === 3) return true; // Placeholder step for now
+      // Proposal Flow
+      if (stepIndex === 2) {
+        // Upload Step - Check if file exists if required, or just allow skip?
+        // User said "1st step will be user will upload... extract all data".
+        // Ideally we should block if no file, but for now let's allow proceed.
+        return true;
+      }
+      if (stepIndex === 3) return await trigger('client');
+      if (stepIndex === 4) return true; // Details/Placeholder
     }
     return true;
   };
+
+  // ... (nextStep, prevStep, handleStepClick)
 
   const nextStep = async () => {
     const isValid = await validateStep(currentStep);
     if (isValid) {
       setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1));
       window.scrollTo(0, 0);
+    } else {
+      console.warn("Validation failed for step:", currentStep);
+      const errors = methods.formState.errors;
+      console.log("Current errors:", errors);
+      // Optional: alert to help user if they don't have console open (dev only?)
+      // alert("Please fix the errors in the current step.");
     }
   };
 
@@ -124,15 +199,30 @@ export default function Home() {
     if (isValid) {
       setCurrentStep(index);
       window.scrollTo(0, 0);
+    } else {
+      console.warn("Cannot jump steps: Current step validation failed.");
     }
   };
 
   const onSubmit: SubmitHandler<InvoiceFormData> = async (data) => {
     console.log("Submitting:", data);
     try {
-      const result = await saveInvoice(data);
-      if (result.success) alert(`Document ${data.settings.invoiceNumber} saved!`);
-      else alert(`Error: ${result.error}`);
+      let result;
+
+      if (data.documentType === 'quotation' || data.documentType === 'proposal') {
+        // Use separate Quotation module
+        result = await createQuotation(data);
+      } else {
+        // Use separate Invoice module
+        result = await createInvoice(data);
+      }
+
+      if (result.success) {
+        const typeLabel = data.documentType === 'invoice' ? 'Invoice' : 'Quotation';
+        alert(`${typeLabel} ${data.settings.invoiceNumber} saved successfully!`);
+      } else {
+        alert(`Error: ${result.error}`);
+      }
     } catch (error) {
       alert("An unexpected error occurred.");
       console.error(error);
@@ -145,9 +235,9 @@ export default function Home() {
   const renderStepContent = () => {
     if (currentStep === 0) return <Settings />;
     if (currentStep === 1) return <DocumentTypeSelection />;
-    if (currentStep === 2) return <ClientInfo />;
 
     if (documentType === 'invoice' || documentType === 'quotation') {
+      if (currentStep === 2) return <ClientInfo />;
       if (currentStep === 3) return <ServiceSelection />;
       if (currentStep === 4) return <PaymentDetails />;
       if (currentStep === 5) return (
@@ -160,8 +250,10 @@ export default function Home() {
       );
     } else {
       // Proposal Flow
-      if (currentStep === 3) return <PlaceholderStep title={'Project Proposal'} />;
-      if (currentStep === 4) return (
+      if (currentStep === 2) return <ProposalUploadStep />;
+      if (currentStep === 3) return <ClientInfo />;
+      if (currentStep === 4) return <PlaceholderStep title={'Project Proposal Details'} />;
+      if (currentStep === 5) return (
         <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
           <div className="lg:hidden block rounded-xl overflow-hidden shadow-sm border border-gray-200 bg-gray-50">
             <PlaceholderPreview />
@@ -251,4 +343,6 @@ export default function Home() {
     </div >
   );
 }
+
+
 

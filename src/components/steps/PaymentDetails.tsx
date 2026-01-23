@@ -4,7 +4,7 @@ import { InvoiceFormData } from '@/lib/schemas';
 import { Coins, AlertCircle } from 'lucide-react';
 
 export function PaymentDetails() {
-    const { register, control, formState: { errors } } = useFormContext<InvoiceFormData>();
+    const { register, control, watch, formState: { errors } } = useFormContext<InvoiceFormData>();
     const { fields } = useFieldArray({
         control,
         name: "items"
@@ -133,13 +133,15 @@ export function PaymentDetails() {
                         />
                     </div>
 
-                    <div className="space-y-1.5 md:col-span-2">
-                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Payment Status</label>
-                        <div className="flex items-center gap-3 bg-gray-50/50 p-2 rounded-lg border border-gray-200">
-                            <input type="checkbox" {...register('settings.isPaid')} className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer accent-primary" />
-                            <span className="text-sm font-medium text-neutral-700">Mark as Paid</span>
+                    {watch('documentType') === 'invoice' && (
+                        <div className="space-y-1.5 md:col-span-2">
+                            <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Payment Status</label>
+                            <div className="flex items-center gap-3 bg-gray-50/50 p-2 rounded-lg border border-gray-200">
+                                <input type="checkbox" {...register('settings.isPaid')} className="w-5 h-5 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer accent-primary" />
+                                <span className="text-sm font-medium text-neutral-700">Mark as Paid</span>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div >

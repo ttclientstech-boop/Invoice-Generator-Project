@@ -17,8 +17,8 @@ export function PlaceholderPreview() {
                 <p className="text-slate-500 text-lg text-center max-w-md leading-relaxed">
                     The preview template for <strong>{title}s</strong> is currently under development.
                 </p>
-                <div className="mt-8 px-6 py-3 bg-white rounded-full border border-gray-200 shadow-sm text-sm font-medium text-slate-400">
-                    Example Preview Only
+                <div className="mt-8 px-6 py-3 bg-white rounded-full border border-gray-200 shadow-sm text-sm font-medium text-slate-500">
+                    {title} Number: <span className="font-bold text-slate-800">{watch('settings.invoiceNumber') || 'Pending...'}</span>
                 </div>
             </div>
         </div>
