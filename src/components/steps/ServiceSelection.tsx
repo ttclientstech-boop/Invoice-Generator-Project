@@ -1,10 +1,10 @@
 import React from 'react';
 import { useFormContext, useFieldArray } from 'react-hook-form';
-import { InvoiceFormData, serviceCategories } from '@/lib/schemas';
+import { InvoiceFormData } from '@/lib/schemas';
 import { Plus, Trash2, List } from 'lucide-react';
 
 export function ServiceSelection() {
-    const { register, control, watch, formState: { errors } } = useFormContext<InvoiceFormData>();
+    const { register, control, formState: { errors } } = useFormContext<InvoiceFormData>();
     const { fields, append, remove } = useFieldArray({
         control,
         name: "items"
@@ -20,7 +20,7 @@ export function ServiceSelection() {
                 <button
                     type="button"
                     onClick={() => append({
-                        serviceCategory: 'Web & Software Dev',
+                        serviceCategory: '',
                         description: '',
                         price: 0,
                         quantity: 1,
@@ -35,7 +35,7 @@ export function ServiceSelection() {
 
             <div className="space-y-4">
                 {fields.map((field, index) => {
-                    const currentCategory = watch(`items.${index}.serviceCategory`);
+
 
                     return (
                         <div key={field.id} className="group bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all relative">
@@ -52,14 +52,11 @@ export function ServiceSelection() {
                                 {/* Category */}
                                 <div className="space-y-1.5">
                                     <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Category</label>
-                                    <select
+                                    <input
                                         {...register(`items.${index}.serviceCategory`)}
-                                        className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2 text-sm font-medium text-neutral-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
-                                    >
-                                        {serviceCategories.map((cat) => (
-                                            <option key={cat} value={cat}>{cat}</option>
-                                        ))}
-                                    </select>
+                                        placeholder="e.g. Web Development"
+                                        className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium text-neutral-800 placeholder:text-gray-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    />
                                 </div>
 
                                 {/* Description */}
@@ -74,60 +71,7 @@ export function ServiceSelection() {
                                 </div>
                             </div>
 
-                            {/* DYNAMIC FIELDS based on Category */}
-                            <div className="bg-gray-50/50 p-5 rounded-xl border border-gray-100 mb-6">
-                                <h4 className="text-xs font-bold text-neutral-400 mb-4 uppercase tracking-wider flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/40"></span>
-                                    Specific Details
-                                </h4>
 
-                                {currentCategory === 'Web & Software Dev' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-semibold text-gray-500">App Type</label>
-                                            <select {...register(`items.${index}.details.applicationType`)} className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
-                                                <option value="Static">Static Website</option>
-                                                <option value="Dynamic">Dynamic Website</option>
-                                                <option value="Web App">Web Application</option>
-                                                <option value="Enterprise">Enterprise System</option>
-                                            </select>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-semibold text-gray-500">Pages/Modules</label>
-                                            <input type="number" {...register(`items.${index}.details.pagesModules`)} className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all" placeholder="e.g. 5" />
-                                        </div>
-                                        <div className="space-y-2 flex items-center gap-3 pt-6">
-                                            <input type="checkbox" {...register(`items.${index}.details.adminDashboard`)} className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary" />
-                                            <label className="text-xs font-semibold text-gray-600">Include Admin Dashboard</label>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {currentCategory === 'Mobile App Dev' && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-semibold text-gray-500">Platform</label>
-                                            <select {...register(`items.${index}.details.targetPlatform`)} className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
-                                                <option value="Android">Android</option>
-                                                <option value="iOS">iOS</option>
-                                                <option value="Both">Both (Android + iOS)</option>
-                                            </select>
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <label className="text-xs font-semibold text-gray-500">Approach</label>
-                                            <select {...register(`items.${index}.details.approach`)} className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all">
-                                                <option value="Native">Native</option>
-                                                <option value="Cross-platform">Cross-platform (Flutter/RN)</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Fallback for others - keep height consistent or show message? */}
-                                {(!['Web & Software Dev', 'Mobile App Dev'].includes(currentCategory)) && (
-                                    <p className="text-xs text-gray-400 italic">No specific details required for this category.</p>
-                                )}
-                            </div>
 
 
 
@@ -145,7 +89,7 @@ export function ServiceSelection() {
                         <button
                             type="button"
                             onClick={() => append({
-                                serviceCategory: 'Web & Software Dev',
+                                serviceCategory: '',
                                 description: '',
                                 price: 0,
                                 quantity: 1,

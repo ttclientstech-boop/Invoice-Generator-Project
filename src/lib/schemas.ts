@@ -1,13 +1,6 @@
 import { z } from 'zod';
 
-export const serviceCategories = [
-    'Web & Software Dev',
-    'Mobile App Dev',
-    'Blockchain & Web3',
-    'AI-driven Solutions',
-    'SaaS Development',
-    'Other'
-] as const;
+
 
 // --- Sub-Schemas for Dynamic Fields ---
 
@@ -68,7 +61,7 @@ export const clientSchema = z.object({
 });
 
 export const serviceItemSchema = z.object({
-    serviceCategory: z.enum(serviceCategories),
+    serviceCategory: z.string().min(1, "Category is required"),
     description: z.string().optional(), // Can be auto-generated or manually edited
     quantity: z.number().min(1).default(1),
     currency: z.string().default('USD'), // Moved from settings
