@@ -148,15 +148,7 @@ const InvoiceSchema = new Schema<IInvoice>({
     items: [{
         serviceCategory: {
             type: String,
-            required: true,
-            enum: [
-                'Web & Software Dev',
-                'Mobile App Dev',
-                'Blockchain & Web3',
-                'AI-driven Solutions',
-                'SaaS Development',
-                'Other'
-            ]
+            required: true
         },
         description: { type: String }, // Removed required: true
         serviceDetails: { type: Schema.Types.Mixed }, // Flexible for diverse category fields
@@ -174,6 +166,14 @@ const InvoiceSchema = new Schema<IInvoice>({
 });
 
 // --- Model ---
+
+// --- Model ---
+
+if (process.env.NODE_ENV === 'development') {
+    if (models.Invoice) {
+        delete models.Invoice;
+    }
+}
 
 const Invoice = models.Invoice || model<IInvoice>('Invoice', InvoiceSchema);
 

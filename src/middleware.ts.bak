@@ -1,0 +1,41 @@
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+
+export function middleware(request: NextRequest) {
+    const cookieName = process.env.COOKIE_NAME || 'admin_session';
+    const hasCookie = request.cookies.has(cookieName);
+
+    const { pathname } = request.nextUrl;
+
+    // Paths that require auth (Main app)
+    // We want to protect the root '/' and possibly others, but exclude /login, /api/auth, and static assets
+    const isProtectedPath = pathname === '/' || pathname.startsWith('/admin'); // Adjust as needed
+
+    if (isProtectedPath && !hasCookie) {
+        const loginUrl = new URL('/login', request.url);
+        return NextResponse.redirect(loginUrl);
+    }
+
+    // If on login page but already has cookie, redirect to home
+    if (pathname === '/login' && hasCookie) {
+        const homeUrl = new URL('/', request.url);
+        return NextResponse.redirect(homeUrl);
+    }
+
+    return NextResponse.next();
+}
+
+export const config = {
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - api/auth (auth routes)
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * - login (login page)
+         * - images (public images)
+         */
+        '/((?!api/auth|_next/static|_next/image|favicon.ico|login|images).*)',
+    ],
+};

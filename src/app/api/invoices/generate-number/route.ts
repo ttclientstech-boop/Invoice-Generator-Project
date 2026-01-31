@@ -19,11 +19,11 @@ export async function GET(request: Request) {
         if (isQuotation) {
             const { default: Quotation } = await import('@/models/Quotation');
             Model = Quotation;
-            prefix = 'QTN-';
+            prefix = 'QTN-- 25/26-';
             numberField = 'quotationNumber';
         } else {
             Model = Invoice;
-            prefix = 'INV-';
+            prefix = 'INV- 25/26-';
             numberField = 'invoiceNumber';
         }
 
@@ -35,9 +35,9 @@ export async function GET(request: Request) {
         if (latestDoc) {
             const currentDocNumber = latestDoc[numberField];
             if (currentDocNumber) {
-                // Extract the numeric part. Regex needs to match the dynamic prefix.
-                // We typically assume the format is PREFIX-digits
-                const matches = currentDocNumber.match(/-(\d+)/);
+                // Extract the numeric part from the end of the string.
+                // Works for "INV-001" (matches 001) and "INV- 25/26-001" (matches 001)
+                const matches = currentDocNumber.match(/(\d+)$/);
                 if (matches && matches[1]) {
                     const currentNum = parseInt(matches[1], 10);
                     const nextNum = currentNum + 1;

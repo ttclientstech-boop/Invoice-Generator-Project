@@ -41,7 +41,7 @@ export function Settings() {
                     bankName: 'Kotak Mahindra Bank',
                     bankAddress: 'Kotak Mahindra Bank Ltd, Gate No. 141,Satara Parisar Beed Bypass Road, Sambhajinagar,Gandheli, Gandheli-431002, Maharashtra, India,',
                     accountNumber: '0049977967',
-                    ifscCode: 'KKBK0001956',
+                    ifscCode: 'KKBK0001949 / KKBK0001956',
                     swiftCode: ''
                 }
             };

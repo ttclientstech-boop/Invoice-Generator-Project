@@ -113,6 +113,7 @@ export const settingsSchema = z.object({
     // currency removed from here
     taxRate: z.number().min(0).max(100).default(0),
     discount: z.number().min(0).default(0),
+    paidAmount: z.number().min(0).default(0), // Added paidAmount field
     paymentTerms: z.string().optional(),
     notes: z.string().optional(),
     status: z.enum(['Draft', 'Sent']).default('Draft'),

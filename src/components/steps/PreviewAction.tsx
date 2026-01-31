@@ -2,7 +2,7 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Save, Send, Download } from 'lucide-react';
 
-export function PreviewAction({ onSave }: { onSave: () => void }) {
+export function PreviewAction({ onSave, onComplete }: { onSave: () => void, onComplete?: () => void }) {
     const { register, watch } = useFormContext();
     const isPaid = watch('settings.isPaid');
 
@@ -58,6 +58,12 @@ export function PreviewAction({ onSave }: { onSave: () => void }) {
             }
 
             pdf.save(`invoice_${new Date().toISOString().split('T')[0]}.pdf`);
+
+            // 3. Reset Form if callback provided
+            if (onComplete) {
+                onComplete();
+            }
+
         } catch (error) {
             console.error("PDF Generation failed:", error);
             alert("Failed to generate PDF. Check console for details.");

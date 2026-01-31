@@ -9,8 +9,8 @@
   /* Slightly off-white for better contrast with cards */
   --color-foreground: #1e293b;
 
-  --font-heading: 'Outfit', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: var(--font-bochan);
+  --font-body: var(--font-minion);
 
   --shadow-paper: 0 1px 1px rgba(0, 0, 0, 0.1), 0 10px 30px rgba(0, 0, 0, 0.05), 0 20px 60px rgba(0, 0, 0, 0.05);
   --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);

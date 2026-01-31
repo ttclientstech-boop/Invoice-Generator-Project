@@ -79,8 +79,8 @@ export function InvoicePreview() {
             // We will wrap the measure-header in the same classes as the real header.
             let availableHeight = USABLE_HEIGHT - headerHeight - tableHeaderHeight;
 
-            // Safety buffer - increased to ensure we don't accidentally overflow
-            availableHeight -= 100;
+            // Safety buffer - reduced to prevent unnecessary page breaks
+            availableHeight -= 20;
 
             // Track if we are on page 1 or subsequent
             let isFirstPage = true;
@@ -111,7 +111,7 @@ export function InvoicePreview() {
 
             // We need to account for the margin-top of the footer (mt-8 = 32px) + potential expansion
             // Adding specific buffer for footer margin
-            const FOOTER_MARGIN = 60;
+            const FOOTER_MARGIN = 20;
 
             if (remainingSpace < footerHeight + FOOTER_MARGIN) {
                 // Footer doesn't fit.
@@ -160,7 +160,7 @@ export function InvoicePreview() {
                                 )}
                             </div>
                             <div className="space-y-1 text-slate-500 text-sm font-medium">
-                                <p>{numberLabel}: <span className="text-slate-700">{settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-001' : 'INV-001')}</span></p>
+                                <p>{numberLabel}: <span className="text-slate-700">{settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-- 25/26-001' : 'INV- 25/26-001')}</span></p>
                                 <p>Date of issue: <span className="text-slate-700">{settings?.date ? new Date(settings.date).toLocaleDateString('en-US') : '-'}</span></p>
                                 {!settings?.isPaid && (
                                     <p>Date due: <span className="text-slate-700">{settings?.dueDate ? new Date(settings.dueDate).toLocaleDateString('en-US') : '-'}</span></p>
@@ -328,7 +328,7 @@ export function InvoicePreview() {
                                                 )}
                                             </div>
                                             <div className="space-y-1 text-slate-500 text-sm font-medium">
-                                                <p>{numberLabel}: <span className="text-slate-700">{settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-001' : 'INV-001')}</span></p>
+                                                <p>{numberLabel}: <span className="text-slate-700">{settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-- 25/26-001' : 'INV- 25/26-001')}</span></p>
                                                 <p>Date of issue: <span className="text-slate-700">{settings?.date ? new Date(settings.date).toLocaleDateString('en-US') : '-'}</span></p>
                                                 {!settings?.isPaid && (
                                                     <p>Date due: <span className="text-slate-700">{settings?.dueDate ? new Date(settings.dueDate).toLocaleDateString('en-US') : '-'}</span></p>
@@ -380,65 +380,64 @@ export function InvoicePreview() {
                                     </div>
 
                                     {/* Table Header & Due Date */}
-                                    <div className="flex justify-between items-end mb-4 relative">
-                                        <h2 className="text-xl font-bold text-slate-800">Services</h2>
-                                        {!settings?.isPaid && (
-                                            <p className="text-slate-500 font-medium">
-                                                Due date: <span className="text-slate-800">{settings?.dueDate ? new Date(settings.dueDate).toLocaleDateString('en-US') : '-'}</span>
-                                            </p>
-                                        )}
-                                    </div>
+                                    {items.length > 0 && (
+                                        <div className="flex justify-between items-end mb-4 relative">
+                                            <h2 className="text-xl font-bold text-slate-800">Services</h2>
+                                            {!settings?.isPaid && (
+                                                <p className="text-slate-500 font-medium">
+                                                    Due date: <span className="text-slate-800">{settings?.dueDate ? new Date(settings.dueDate).toLocaleDateString('en-US') : '-'}</span>
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
                                 </>
                             )}
 
                             {/* --- HEADER SPACER (Subsequent Pages) --- */}
                             {!isFirstPage && (
                                 <div className="mb-8 border-b pb-4 flex justify-between items-center opacity-50">
-                                    <span className="text-sm font-bold text-slate-400">{documentTitle} {settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-001' : 'INV-001')}</span>
+                                    <span className="text-sm font-bold text-slate-400">{documentTitle} {settings?.invoiceNumber || (documentType === 'quotation' ? 'QTN-- 25/26-001' : 'INV- 25/26-001')}</span>
                                     <span className="text-sm font-bold text-slate-400">Page {pageIndex + 1} of {pageCount}</span>
                                 </div>
                             )}
 
                             {/* --- TABLE --- */}
-                            <div className="border border-slate-200 rounded-xl overflow-hidden mb-12">
-                                <table className="w-full">
-                                    <thead className="bg-slate-50 border-b border-slate-200">
-                                        <tr>
-                                            <th className="text-left py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider w-[45%]">Description</th>
-                                            <th className="text-center py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Qty</th>
-                                            <th className="text-right py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Unit price</th>
-                                            <th className="text-right py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Tax</th>
-                                            <th className="text-right py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {pageItems.map((item: any, index: number) => (
-                                            <tr key={index}>
-                                                <td className="py-5 px-6">
-                                                    <p className="font-bold text-slate-800 text-sm mb-1">{item.serviceCategory || 'Service'}</p>
-                                                    <p className="text-xs text-slate-500">{item.description}</p>
-                                                </td>
-                                                <td className="text-center py-5 px-6 text-sm font-medium text-slate-700">{Number(item.quantity || 1)}</td>
-                                                <td className="text-right py-5 px-6 text-sm font-medium text-slate-700">{item.currency || displayCurrency} {Number(item.price || 0).toFixed(2)}</td>
-                                                <td className="text-right py-5 px-6 text-sm text-slate-500">{settings?.taxRate}%</td>
-                                                <td className="text-right py-5 px-6 text-sm font-bold text-slate-900">{item.currency || displayCurrency} {(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)}</td>
-                                            </tr>
-                                        ))}
-                                        {pageItems.length === 0 && !isFirstPage && (
+                            {items.length > 0 && (
+                                <div className="border border-slate-200 rounded-xl overflow-hidden mb-12">
+                                    <table className="w-full">
+                                        <thead className="bg-slate-50 border-b border-slate-200">
                                             <tr>
-                                                <td colSpan={5} className="py-8 text-center text-slate-400 text-sm italic">
-                                                    (Continued from previous page)
-                                                </td>
+                                                <th className="text-left py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider w-[45%]">Description</th>
+                                                <th className="text-center py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Qty</th>
+                                                <th className="text-right py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Unit price</th>
+                                                <th className="text-right py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Tax</th>
+                                                <th className="text-right py-4 px-6 font-semibold text-slate-500 text-xs uppercase tracking-wider">Amount</th>
                                             </tr>
-                                        )}
-                                        {isFirstPage && items.length === 0 && (
-                                            <tr>
-                                                <td colSpan={5} className="py-8 text-center text-slate-400 text-sm">No items added</td>
-                                            </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100">
+                                            {pageItems.map((item: any, index: number) => (
+                                                <tr key={index}>
+                                                    <td className="py-5 px-6">
+                                                        <p className="font-bold text-slate-800 text-sm mb-1">{item.serviceCategory || 'Service'}</p>
+                                                        <p className="text-xs text-slate-500">{item.description}</p>
+                                                    </td>
+                                                    <td className="text-center py-5 px-6 text-sm font-medium text-slate-700">{Number(item.quantity || 1)}</td>
+                                                    <td className="text-right py-5 px-6 text-sm font-medium text-slate-700">{item.currency || displayCurrency} {Number(item.price || 0).toFixed(2)}</td>
+                                                    <td className="text-right py-5 px-6 text-sm text-slate-500">{settings?.taxRate}%</td>
+                                                    <td className="text-right py-5 px-6 text-sm font-bold text-slate-900">{item.currency || displayCurrency} {(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)}</td>
+                                                </tr>
+                                            ))}
+                                            {pageItems.length === 0 && !isFirstPage && (
+                                                <tr>
+                                                    <td colSpan={5} className="py-8 text-center text-slate-400 text-sm italic">
+                                                        (Continued from previous page)
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </div>
 
                         {/* Footer - Only on Last Page */}
@@ -462,9 +461,24 @@ export function InvoicePreview() {
                                                     <span>- {displayCurrency} {discountAmount.toFixed(2)}</span>
                                                 </div>
                                             )}
+
                                             <div className="border-t pt-3 mt-3 flex justify-between text-xl font-bold text-slate-800">
                                                 <span>Total</span>
                                                 <span>{displayCurrency} {total.toFixed(2)}</span>
+                                            </div>
+
+                                            {/* Paid Amount */}
+                                            {(settings?.paidAmount || 0) > 0 && (
+                                                <div className="flex justify-between text-slate-600 font-medium mt-2">
+                                                    <span>Paid Amount</span>
+                                                    <span>- {displayCurrency} {Number(settings?.paidAmount || 0).toFixed(2)}</span>
+                                                </div>
+                                            )}
+
+                                            {/* Due Amount */}
+                                            <div className="flex justify-between text-slate-600 font-bold mt-2 pt-2 border-t border-slate-100">
+                                                <span>Due Amount</span>
+                                                <span>{displayCurrency} {Math.max(0, total - Number(settings?.paidAmount || 0)).toFixed(2)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -520,6 +534,6 @@ export function InvoicePreview() {
                     </div>
                 );
             })}
-        </div >
+        </div>
     );
 }

@@ -114,3 +114,62 @@ export async function createQuotation(data: InvoiceFormData) {
         return { success: false, error: error.message || 'Failed to create quotation' };
     }
 }
+
+// --- Draft Actions ---
+
+export async function saveDraft(data: any, currentStep: number, existingId?: string) {
+    try {
+        await dbConnect();
+        const { default: Draft } = await import('@/models/Draft');
+
+        // Determine a name for the draft
+        const clientName = data.client?.name || data.client?.organizationName;
+        const invoiceNum = data.settings?.invoiceNumber;
+        const name = clientName ? `${clientName} (${invoiceNum || 'No No.'})` : `Draft - ${new Date().toLocaleString()}`;
+
+        if (existingId) {
+            await Draft.findByIdAndUpdate(existingId, {
+                data: { ...data, savedStep: currentStep }, // Inject step into Mixed data
+                currentStep,
+                name,
+                updatedAt: new Date()
+            });
+            return { success: true, id: existingId };
+        } else {
+            const newDraft = await Draft.create({
+                name,
+                data: { ...data, savedStep: currentStep }, // Inject step into Mixed data
+                currentStep
+            });
+            return { success: true, id: newDraft._id.toString() };
+        }
+    } catch (error: any) {
+        console.error("Failed to save draft:", error);
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getDrafts() {
+    try {
+        await dbConnect();
+        const { default: Draft } = await import('@/models/Draft');
+        const drafts = await Draft.find().sort({ updatedAt: -1 }).limit(20);
+        // Serialize for client component
+        return JSON.parse(JSON.stringify(drafts));
+    } catch (error) {
+        console.error("Failed to fetch drafts:", error);
+        return [];
+    }
+}
+
+export async function deleteDraft(id: string) {
+    try {
+        await dbConnect();
+        const { default: Draft } = await import('@/models/Draft');
+        await Draft.findByIdAndDelete(id);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete draft:", error);
+        return { success: false };
+    }
+}

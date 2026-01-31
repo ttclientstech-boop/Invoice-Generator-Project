@@ -154,15 +154,7 @@ const QuotationSchema = new Schema<IQuotation>({
     items: [{
         serviceCategory: {
             type: String,
-            required: true,
-            enum: [
-                'Web & Software Dev',
-                'Mobile App Dev',
-                'Blockchain & Web3',
-                'AI-driven Solutions',
-                'SaaS Development',
-                'Other'
-            ]
+            required: true
         },
         description: { type: String },
         serviceDetails: { type: Schema.Types.Mixed },
@@ -180,6 +172,15 @@ const QuotationSchema = new Schema<IQuotation>({
 });
 
 // --- Model ---
+
+// Prevent OverwriteModelError in development
+// BUT also force a refresh if we changed schema and HMR didn't pick it up (common in dev)
+// Since we just removed an Enum, we want to ensure the new schema is used.
+if (process.env.NODE_ENV === 'development') {
+    if (models.Quotation) {
+        delete models.Quotation;
+    }
+}
 
 const Quotation = models.Quotation || model<IQuotation>('Quotation', QuotationSchema);
 

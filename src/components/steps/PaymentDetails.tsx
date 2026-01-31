@@ -90,7 +90,7 @@ export function PaymentDetails() {
                         <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Invoice Number</label>
                         <input
                             {...register('settings.invoiceNumber')}
-                            placeholder="INV-2024-001"
+                            placeholder="INV- 25/26-001"
                             className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                         {errors.settings?.invoiceNumber && <p className="text-red-500 text-xs pl-1">{errors.settings.invoiceNumber.message}</p>}
@@ -129,6 +129,15 @@ export function PaymentDetails() {
                         <input
                             type="number"
                             {...register('settings.discount', { valueAsNumber: true })}
+                            className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                        />
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-neutral-500 uppercase tracking-widest pl-1">Paid Amount</label>
+                        <input
+                            type="number"
+                            {...register('settings.paidAmount', { valueAsNumber: true })}
                             className="flex h-11 w-full rounded-lg border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                     </div>
